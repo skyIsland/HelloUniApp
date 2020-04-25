@@ -88,8 +88,8 @@ const getUser = () => {
 
 const getToken = () => {
 	let user = getUser()
-	if (user && user.token != undefined) {
-		return user.token
+	if (user && user.Token != undefined) {
+		return user.Token
 	}
 	return ""
 }
@@ -126,7 +126,7 @@ const request = (api, params = {}, method = "GET", header = {}) => {
 		if (method.toUpperCase() == 'POST') header["content-type"] = "application/x-www-form-urlencoded"
 
 		let token = getToken()
-		if (token) header['authorization'] = token
+		if (token) header['Authorization'] = token
 
 		uni.request({
 			url: api,
@@ -135,9 +135,17 @@ const request = (api, params = {}, method = "GET", header = {}) => {
 			header: header,
 			success: function(res) {
 				if (res.statusCode == 200) {
-					resolve(res.data);
+					var d = res.data;
+					if (d.Sucess) {
+						resolve(res.data);
+					} else {
+						if (d.ErrorCode == 401) {
+							clearUser();
+						}
+						this.toastError(d.Msg)
+					}
 				} else {
-					if(res.statusCode == 401) clearUser()
+					if (res.statusCode == 401) clearUser()
 					reject(res);
 				}
 			},

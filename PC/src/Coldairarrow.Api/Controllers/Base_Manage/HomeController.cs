@@ -40,6 +40,26 @@ namespace Coldairarrow.Api.Controllers.Base_Manage
             return await _homeBus.SubmitLoginAsync(input);
         }
 
+        /// <summary>
+        /// 用户登录(获取token)
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [NoCheckJWT]
+        public async Task<object> ApiSubmitLogin(LoginInputDTO input)
+        {
+            var token =  await _homeBus.SubmitLoginAsync(input);
+            var theInfo = await _userBus.GetTheDataAsync(_operator.UserId);
+
+            var resObj = new
+            {
+                Token = token,
+                UserInfo = theInfo
+            };
+
+            return resObj;
+        }
+
         [HttpPost]
         public async Task ChangePwd(ChangePwdInputDTO input)
         {

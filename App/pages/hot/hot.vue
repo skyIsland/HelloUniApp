@@ -1,20 +1,20 @@
 <template>
-	<view class="grid">
-		<view class="grid-c-06" v-for="item in dataList" :key="item.guid">
-			<view class="panel" @click="goDetail(item)">
-				<image class="card-img card-list2-img" :src="item.img_src"></image>
-				<text class="card-num-view card-list2-num-view">{{item.img_num}}P</text>
-				<view class="card-bottm row">
-					<view class="car-title-view row">
-						<text class="card-title card-list2-title">{{item.title}}</text>
+	<view class="index">
+		<view class="grid">
+			<view class="grid-c-06" v-for="item in lists" :key="item.guid">
+				<view class="panel" @click="goDetail(item)">
+					<image class="card-img card-list2-img" :src="item.img_src"></image>
+					<text class="card-num-view card-list2-num-view">{{item.img_num}}P</text>
+					<view class="card-bottm row">
+						<view class="car-title-view row">
+							<text class="card-title card-list2-title">{{item.title}}</text>
+						</view>
+						<view @click.stop="share(item)" class="card-share-view"></view>
 					</view>
-					<view @click.stop="share(item)" class="card-share-view"></view>
 				</view>
 			</view>
 		</view>
-		<view class="grid-c-12">
-			<text class="loadMore">{{loadMoreText}}</text>
-		</view>
+		<text class="loadMore">加载中...</text>
 	</view>
 </template>
 
@@ -23,21 +23,12 @@
 		data() {
 			return {
 				refreshing: false,
-				loadMoreText: '加载中...',
-				dataList: [],
-				id: 0,
-				fetchPageNum: 0
+				lists: [],
+				fetchPageNum: 1
 			}
 		},
-		onLoad(e) {
-			uni.setNavigationBarTitle({
-				title: '专题：' + e.type
-			});
-			this.id = e.id;
-			// 防止app里由于渲染导致转场动画卡顿
-			setTimeout(() => {
-				this.getData();
-			}, 300);
+		onLoad() {
+			this.getData();
 			uni.getProvider({
 				service: 'share',
 				success: (e) => {
@@ -68,7 +59,7 @@
 					this.providerList = data;
 				},
 				fail: (e) => {
-					console.log('获取分享通道失败', e);
+					console.log('获取登录通道失败', e);
 				}
 			});
 		},
@@ -78,52 +69,45 @@
 			this.getData();
 		},
 		onReachBottom() {
-			console.log('上拉加载刷新');
-			if (this.fetchPageNum > 4) {
-				this.loadMoreText = '没有更多了'
-				return;
-			}
 			this.getData();
 		},
 		methods: {
-			getData(e) {
+			getData() {
 				uni.request({
-					url: this.$serverUrl + '/api/picture/list.php?type=' + this.id,
+					url: this.$serverUrl + '/api/picture/posts.php?page=' + (this.refreshing ? 1 : this.fetchPageNum) +
+						'&per_page=10',
 					success: (ret) => {
+						console.log(ret)
 						if (ret.statusCode !== 200) {
-							console.log('请求失败', ret)
-							return;
-						}
-
-						const data = ret.data.data;
-
-						if (this.refreshing && data[0].id === this.dataList[0].id) {
-							uni.showToast({
-								title: '已经最新',
-								icon: 'none',
-							});
-							this.refreshing = false;
-							uni.stopPullDownRefresh();
-							return;
-						}
-
-						let list = [];
-						for (var i = 0; i < data.length; i++) {
-							var item = data[i];
-							item.guid = this.newGuid() + item.id
-							list.push(item);
-						}
-
-						if (this.refreshing) {
-							this.refreshing = false;
-							uni.stopPullDownRefresh();
-							this.dataList = list;
-							this.fetchPageNum = 2;
+							console.log('请求失败:', ret)
 						} else {
-							this.dataList = this.dataList.concat(list);
-							this.fetchPageNum += 1;
+							if (this.refreshing && ret.data[0].id === this.lists[0].id) {
+								uni.showToast({
+									title: '已经最新',
+									icon: 'none',
+								});
+								this.refreshing = false;
+								uni.stopPullDownRefresh();
+								return;
+							}
+							let list = [],
+								data = ret.data;
+							for (let i = 0, length = data.length; i < length; i++) {
+								var item = data[i];
+								item.guid = this.newGuid() + item.id
+								list.push(item);
+							}
+							console.log('得到list', list);
+							if (this.refreshing) {
+								this.refreshing = false;
+								uni.stopPullDownRefresh()
+								this.lists = list;
+								this.fetchPageNum = 2;
+							} else {
+								this.lists = this.lists.concat(list);
+								this.fetchPageNum += 1;
+							}
 						}
-						this.fetchPageNum += 1;
 					}
 				});
 			},
@@ -135,20 +119,20 @@
 			},
 			goDetail(e) {
 				uni.navigateTo({
-					url: '/pages/detail/detail?data=' + encodeURIComponent(JSON.stringify(e))
-				});
+					url: '../detail/detail?data=' + encodeURIComponent(JSON.stringify(e))
+				})
 			},
 			share(e) {
 				if (this.providerList.length === 0) {
 					uni.showModal({
 						title: '当前环境无分享渠道!',
 						showCancel: false
-					});
+					})
 					return;
 				}
 				let itemList = this.providerList.map(function(value) {
-					return value.name;
-				});
+					return value.name
+				})
 				uni.showActionSheet({
 					itemList: itemList,
 					success: (res) => {
@@ -168,22 +152,18 @@
 								uni.showModal({
 									content: e.errMsg,
 									showCancel: false
-								});
+								})
 							}
 						});
 					}
-				});
+				})
 			}
 		}
 	}
 </script>
 
-<style scoped>
-	.grid {
+<style>
+	.grid{
 		padding-top: 10px;
-	}
-
-	.grid-c-12 {
-		justify-content: center;
 	}
 </style>
