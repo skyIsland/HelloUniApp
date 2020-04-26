@@ -919,12 +919,11 @@ function wrapper$1(event) {
 
   event.target = event.target || {};
 
-  if (!hasOwn(event, 'detail')) {
+  if (!hasOwn(event, 'detail') || !event.detail) {
     event.detail = {};
   }
 
-  if (hasOwn(event, 'markerId')) {
-    event.detail = typeof event.detail === 'object' ? event.detail : {};
+  if (!('markerId' in event.detail) && 'markerId' in event) {
     event.detail.markerId = event.markerId;
   }
 
@@ -1560,7 +1559,361 @@ uni$1;exports.default = _default;
 
 /***/ }),
 
-/***/ 14:
+/***/ 12:
+/*!*********************************************!*\
+  !*** D:/Code/HelloUniApp/App/utils/util.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(uni) {var keyUser = 'user';
+var keyMenu = 'menu';
+var keyReaderSetting = 'reader-setting';
+var keySysInfo = 'sys-info';
+var keySign = 'sign';
+
+var formatTime = function formatTime(date) {
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var day = date.getDate();
+  var hour = date.getHours();
+  var minute = date.getMinutes();
+  var second = date.getSeconds();
+
+  return [year, month, day].map(formatNumber).join('/') + ' ' + [hour, minute, second].map(formatNumber).join(':');
+};
+
+var timestampToDate = function timestampToDate(timestamp) {
+  var date = new Date(timestamp * 1000);
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var day = date.getDate();
+  return [year, month, day].map(formatNumber).join('/');
+};
+
+var formatNumber = function formatNumber(n) {
+  n = n.toString();
+  return n[1] ? n : '0' + n;
+};
+
+var now = function now() {
+  return parseInt(new Date().getTime() / 1000);
+};
+
+var toTimestamp = function toTimestamp(t) {
+  return parseInt(new Date(t).getTime() / 1000);
+};
+
+var relativeTime = function relativeTime(t) {
+
+  var timestamp = toTimestamp(t);
+  var n = now();
+  var diff = n - timestamp;
+  var minute = 60;
+  var hour = minute * 60;
+  var day = hour * 24;
+  var month = day * 30;
+
+  var monthC = diff / month;
+  var dayC = diff / day;
+  var hourC = diff / hour;
+  var minC = diff / minute;
+
+  if (monthC > 12) {
+    return parseInt(monthC / 12) + " 年前";
+  } else if (monthC >= 1) {
+    return parseInt(monthC) + " 月前";
+  } else if (dayC >= 1) {
+    return parseInt(dayC) + " 天前";
+  } else if (hourC >= 1) {
+    return parseInt(hourC) + " 小时前";
+  } else if (minC >= 1) {
+    return parseInt(minC) + " 分钟前";
+  }
+  return '刚刚';
+};
+
+var clearUser = function clearUser() {
+  uni.setStorageSync(keyUser, '{}');
+};
+
+var setUser = function setUser(user) {
+  uni.setStorageSync(keyUser, JSON.stringify(user));
+};
+
+var getUser = function getUser() {
+  try {
+    var value = uni.getStorageSync(keyUser);
+    if (value) {
+      return JSON.parse(value);
+    }
+  } catch (e) {
+    // Do something when catch error
+    console.log(e);
+    return {};
+  }
+};
+
+var getToken = function getToken() {
+  var user = getUser();
+  if (user && user.Token != undefined) {
+    return user.Token;
+  }
+  return "";
+};
+
+
+//添加事件结束
+Promise.prototype.finally = function (callback) {
+  var Promise = this.constructor;
+  return this.then(
+  function (value) {
+    Promise.resolve(callback()).then(
+    function () {
+      return value;
+    });
+
+  },
+  function (reason) {
+    Promise.resolve(callback()).then(
+    function () {
+      throw reason;
+    });
+
+  });
+
+};
+
+// 只有请求结果返回 200 的时候，才会resolve，否则reject
+var request = function request(api) {var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};var method = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "GET";var header = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  return new Promise(function (resolve, reject) {
+    if (!header["content-type"]) {
+      header["content-type"] = "application/json";
+    }
+
+    if (method.toUpperCase() == 'POST') header["content-type"] = "application/json-patch+json";
+
+    var token = getToken();
+    if (token) header['Authorization'] = token;
+
+    uni.request({
+      url: api,
+      data: params,
+      method: method,
+      header: header,
+      success: function success(res) {
+        if (res.statusCode == 200) {
+          var d = res.data;
+          if (d.Success) {
+            resolve(res.data);
+          } else {
+            if (d.ErrorCode == 401) {
+              clearUser();
+            }
+            toastError(d.Msg);
+          }
+        } else {
+          if (res.statusCode == 401) clearUser();
+          reject(res);
+        }
+      },
+      fail: function fail(err) {
+        reject(err);
+      } });
+
+  });
+};
+
+var loading = function loading(title) {
+  title = title ? title : '玩命加载中...';
+  uni.showLoading({
+    title: title,
+    mask: true });
+
+};
+
+var toastError = function toastError(content) {
+  uni.showToast({
+    title: content,
+    icon: 'none',
+    duration: 3000 });
+
+};
+
+var toastSuccess = function toastSuccess(content) {
+  uni.showToast({
+    title: content });
+
+};
+
+var fixView = function fixView(view) {
+  if (view > 10000) {
+    view = (view / 10000).toFixed(1) + "w";
+  } else if (view > 1000) {
+    view = (view / 1000).toFixed(1) + "k";
+  }
+  return view;
+};
+
+
+function isEmail(email) {
+  var pattern = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+  return pattern.test(email);
+}
+
+var _findChildren = function _findChildren(menu, pid) {
+  var children = [];
+  var left = [];
+  for (var i = 0; i < menu.length; i++) {
+    if (menu[i].pid == pid) {
+      children.push(menu[i]);
+    } else {
+      left.push(menu[i]);
+    }
+  }
+  return left, children;
+};
+
+var menuToTree = function menuToTree(menu) {
+  // 来自这篇博客，谢谢: https://blog.csdn.net/u013373006/article/details/82108873
+  menu.forEach(function (item) {
+    delete item.children;
+  });
+  var map = {};
+  menu.forEach(function (item) {
+    map[item.id] = item;
+  });
+  var val = [];
+  menu.forEach(function (item) {
+    var parent = map[item.pid];
+    if (parent) {
+      (parent.children || (parent.children = [])).push(item);
+    } else {
+      val.push(item);
+    }
+  });
+  return val;
+};
+
+var menuSortIds = function menuSortIds(menuTree) {
+  var docs = [];
+  for (var i in menuTree) {
+    docs.push(menuTree[i].id);
+    if (menuTree[i].children) {
+      docs = docs.concat(menuSortIds(menuTree[i].children));
+    }
+  }
+  return docs;
+};
+
+var menuTreeReaded = function menuTreeReaded(menuTree, docId) {
+  for (var i in menuTree) {
+    if (menuTree[i].id == docId) {
+      menuTree[i].readed = true;
+      break;
+    }
+    if (menuTree[i].children) {
+      menuTree[i].children = menuTreeReaded(menuTree[i].children, docId);
+    }
+  }
+  return menuTree;
+};
+
+var setReaderSetting = function setReaderSetting(obj) {
+  uni.setStorageSync(keyReaderSetting, JSON.stringify(obj));
+};
+
+var getReaderSetting = function getReaderSetting() {
+  var val = uni.getStorageSync(keyReaderSetting);
+  if (!val) {
+    return {
+      themeIndex: 0,
+      fontIndex: 0 };
+
+  }
+  val = JSON.parse(val);
+  if (val.themeIndex == undefined) val.themeIndex = 0;
+  if (val.fontIndex == undefined) val.fontIndex = 0;
+  return val;
+};
+
+var setSysInfo = function setSysInfo(obj) {
+  uni.setStorageSync(keySysInfo, JSON.stringify(obj));
+};
+
+var formatReading = function formatReading(seconds) {
+  var reading = {
+    hour: 0,
+    min: 0 };
+
+  var hour = 3600;
+  if (seconds <= 0) {
+    return reading;
+  }
+  reading.hour = parseInt(seconds / hour);
+  reading.min = parseInt((seconds - hour * reading.hour) / 60);
+  return reading;
+};
+
+var getSysInfo = function getSysInfo() {
+  var val = uni.getStorageSync(keySysInfo);
+  if (!val) {
+    return {
+      windowWidth: 0,
+      windowHeight: 0,
+      baseWidth: 0,
+      baseHeight: 0 };
+
+  }
+  return JSON.parse(val);
+};
+
+var setSignedAt = function setSignedAt(timestamp) {
+  // timestamp = 0 表示重置签到时间
+  if (timestamp == 0 || timestamp > getSignedAt()) uni.setStorageSync(keySign, timestamp);
+};
+
+var getSignedAt = function getSignedAt() {
+  var signedAt = uni.getStorageSync(keySign) || 0;
+  return parseInt(signedAt);
+};
+
+var isSignedToday = function isSignedToday() {
+  return timestampToDate(now()) == timestampToDate(getSignedAt());
+};
+
+
+module.exports = {
+  formatTime: formatTime,
+  now: now,
+  toTimestamp: toTimestamp,
+  relativeTime: relativeTime,
+  request: request,
+  loading: loading,
+  toastError: toastError,
+  toastSuccess: toastSuccess,
+  setUser: setUser,
+  clearUser: clearUser,
+  getUser: getUser,
+  getToken: getToken,
+  menuToTree: menuToTree,
+  menuSortIds: menuSortIds,
+  menuTreeReaded: menuTreeReaded,
+  setReaderSetting: setReaderSetting,
+  getReaderSetting: getReaderSetting,
+  isEmail: isEmail,
+  getSysInfo: getSysInfo,
+  setSysInfo: setSysInfo,
+  fixView: fixView,
+  formatReading: formatReading,
+  setSignedAt: setSignedAt,
+  getSignedAt: getSignedAt,
+  isSignedToday: isSignedToday };
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 15:
 /*!**********************************************************************************************************!*\
   !*** ./node_modules/@dcloudio/vue-cli-plugin-uni/packages/vue-loader/lib/runtime/componentNormalizer.js ***!
   \**********************************************************************************************************/
@@ -7751,9 +8104,9 @@ module.exports = g;
 /***/ }),
 
 /***/ 4:
-/*!*************************************************************!*\
-  !*** E:/Code/UniApp/UniAppStudy/HelloUniApp/App/pages.json ***!
-  \*************************************************************/
+/*!******************************************!*\
+  !*** D:/Code/HelloUniApp/App/pages.json ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8648,392 +9001,15 @@ main();
 
 /***/ }),
 
-/***/ 6:
-/*!******************************************************!*\
-  !*** ./node_modules/@dcloudio/uni-stat/package.json ***!
-  \******************************************************/
-/*! exports provided: _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _shasum, _spec, _where, author, bugs, bundleDependencies, deprecated, description, devDependencies, files, gitHead, homepage, license, main, name, repository, scripts, version, default */
-/***/ (function(module) {
-
-module.exports = {"_from":"@dcloudio/uni-stat@next","_id":"@dcloudio/uni-stat@2.0.0-26920200424005","_inBundle":false,"_integrity":"sha512-FT8Z/C5xSmIxooqhV1v69jTkxATPz+FsRQIFOrbdlWekjGkrE73jfrdNMWm7gL5u41ALPJTVArxN1Re9by1bjQ==","_location":"/@dcloudio/uni-stat","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"@dcloudio/uni-stat@next","name":"@dcloudio/uni-stat","escapedName":"@dcloudio%2funi-stat","scope":"@dcloudio","rawSpec":"next","saveSpec":null,"fetchSpec":"next"},"_requiredBy":["#USER","/","/@dcloudio/vue-cli-plugin-uni"],"_resolved":"https://registry.npmjs.org/@dcloudio/uni-stat/-/uni-stat-2.0.0-26920200424005.tgz","_shasum":"47f4375095eda3089cf4678b4b96fc656a7ab623","_spec":"@dcloudio/uni-stat@next","_where":"/Users/guoshengqiang/Documents/dcloud-plugins/release/uniapp-cli","author":"","bugs":{"url":"https://github.com/dcloudio/uni-app/issues"},"bundleDependencies":false,"deprecated":false,"description":"","devDependencies":{"@babel/core":"^7.5.5","@babel/preset-env":"^7.5.5","eslint":"^6.1.0","rollup":"^1.19.3","rollup-plugin-babel":"^4.3.3","rollup-plugin-clear":"^2.0.7","rollup-plugin-commonjs":"^10.0.2","rollup-plugin-copy":"^3.1.0","rollup-plugin-eslint":"^7.0.0","rollup-plugin-json":"^4.0.0","rollup-plugin-node-resolve":"^5.2.0","rollup-plugin-replace":"^2.2.0","rollup-plugin-uglify":"^6.0.2"},"files":["dist","package.json","LICENSE"],"gitHead":"94494d54ed23e2dcf9ab8e3245b48b770b4e98a9","homepage":"https://github.com/dcloudio/uni-app#readme","license":"Apache-2.0","main":"dist/index.js","name":"@dcloudio/uni-stat","repository":{"type":"git","url":"git+https://github.com/dcloudio/uni-app.git","directory":"packages/uni-stat"},"scripts":{"build":"NODE_ENV=production rollup -c rollup.config.js","dev":"NODE_ENV=development rollup -w -c rollup.config.js"},"version":"2.0.0-26920200424005"};
-
-/***/ }),
-
-/***/ 7:
-/*!******************************************************************************!*\
-  !*** E:/Code/UniApp/UniAppStudy/HelloUniApp/App/pages.json?{"type":"style"} ***!
-  \******************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = { "pages": { "pages/new/new": { "navigationBarTitleText": "今日", "enablePullDownRefresh": true }, "pages/hot/hot": { "navigationBarTitleText": "最热", "enablePullDownRefresh": true }, "pages/detail/detail": { "navigationBarTitleText": "详情", "navigationBarBackgroundColor": "#000000", "backgroundColor": "#000000" }, "pages/tag/tag": { "navigationBarTitleText": "分类", "enablePullDownRefresh": false }, "pages/list/list": { "navigationBarTitleText": "专题", "enablePullDownRefresh": true }, "pages/center/center": { "navigationBarTitleText": "个人中心", "enablePullDownRefresh": false }, "pages/login/login": { "navigationBarTitleText": "登录" }, "pages/about/about": {} }, "globalStyle": { "navigationBarTextStyle": "white", "navigationBarTitleText": "面包", "navigationBarBackgroundColor": "#2F85FC", "backgroundColor": "#FFFFFF" } };exports.default = _default;
-
-/***/ }),
-
-/***/ 76:
-/*!****************************************************************!*\
-  !*** E:/Code/UniApp/UniAppStudy/HelloUniApp/App/utils/util.js ***!
-  \****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(uni) {var keyUser = 'user';
-var keyMenu = 'menu';
-var keyReaderSetting = 'reader-setting';
-var keySysInfo = 'sys-info';
-var keySign = 'sign';
-
-var formatTime = function formatTime(date) {
-  var year = date.getFullYear();
-  var month = date.getMonth() + 1;
-  var day = date.getDate();
-  var hour = date.getHours();
-  var minute = date.getMinutes();
-  var second = date.getSeconds();
-
-  return [year, month, day].map(formatNumber).join('/') + ' ' + [hour, minute, second].map(formatNumber).join(':');
-};
-
-var timestampToDate = function timestampToDate(timestamp) {
-  var date = new Date(timestamp * 1000);
-  var year = date.getFullYear();
-  var month = date.getMonth() + 1;
-  var day = date.getDate();
-  return [year, month, day].map(formatNumber).join('/');
-};
-
-var formatNumber = function formatNumber(n) {
-  n = n.toString();
-  return n[1] ? n : '0' + n;
-};
-
-var now = function now() {
-  return parseInt(new Date().getTime() / 1000);
-};
-
-var toTimestamp = function toTimestamp(t) {
-  return parseInt(new Date(t).getTime() / 1000);
-};
-
-var relativeTime = function relativeTime(t) {
-
-  var timestamp = toTimestamp(t);
-  var n = now();
-  var diff = n - timestamp;
-  var minute = 60;
-  var hour = minute * 60;
-  var day = hour * 24;
-  var month = day * 30;
-
-  var monthC = diff / month;
-  var dayC = diff / day;
-  var hourC = diff / hour;
-  var minC = diff / minute;
-
-  if (monthC > 12) {
-    return parseInt(monthC / 12) + " 年前";
-  } else if (monthC >= 1) {
-    return parseInt(monthC) + " 月前";
-  } else if (dayC >= 1) {
-    return parseInt(dayC) + " 天前";
-  } else if (hourC >= 1) {
-    return parseInt(hourC) + " 小时前";
-  } else if (minC >= 1) {
-    return parseInt(minC) + " 分钟前";
-  }
-  return '刚刚';
-};
-
-var clearUser = function clearUser() {
-  uni.setStorageSync(keyUser, '{}');
-};
-
-var setUser = function setUser(user) {
-  uni.setStorageSync(keyUser, JSON.stringify(user));
-};
-
-var getUser = function getUser() {
-  try {
-    var value = uni.getStorageSync(keyUser);
-    if (value) {
-      return JSON.parse(value);
-    }
-  } catch (e) {
-    // Do something when catch error
-    console.log(e);
-    return {};
-  }
-};
-
-var getToken = function getToken() {
-  var user = getUser();
-  if (user && user.Token != undefined) {
-    return user.Token;
-  }
-  return "";
-};
-
-
-//添加事件结束
-Promise.prototype.finally = function (callback) {
-  var Promise = this.constructor;
-  return this.then(
-  function (value) {
-    Promise.resolve(callback()).then(
-    function () {
-      return value;
-    });
-
-  },
-  function (reason) {
-    Promise.resolve(callback()).then(
-    function () {
-      throw reason;
-    });
-
-  });
-
-};
-
-// 只有请求结果返回 200 的时候，才会resolve，否则reject
-var request = function request(api) {var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};var method = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "GET";var header = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-  return new Promise(function (resolve, reject) {
-    if (!header["content-type"]) {
-      header["content-type"] = "application/json";
-    }
-
-    if (method.toUpperCase() == 'POST') header["content-type"] = "application/x-www-form-urlencoded";
-
-    var token = getToken();
-    if (token) header['Authorization'] = token;
-
-    uni.request({
-      url: api,
-      data: params,
-      method: method,
-      header: header,
-      success: function success(res) {
-        if (res.statusCode == 200) {
-          var d = res.data;
-          if (d.Sucess) {
-            resolve(res.data);
-          } else {
-            if (d.ErrorCode == 401) {
-              clearUser();
-            }
-            this.toastError(d.Msg);
-          }
-        } else {
-          if (res.statusCode == 401) clearUser();
-          reject(res);
-        }
-      },
-      fail: function fail(err) {
-        reject(err);
-      } });
-
-  });
-};
-
-var loading = function loading(title) {
-  title = title ? title : '玩命加载中...';
-  uni.showLoading({
-    title: title,
-    mask: true });
-
-};
-
-var toastError = function toastError(content) {
-  uni.showToast({
-    title: content,
-    icon: 'none',
-    duration: 3000 });
-
-};
-
-var toastSuccess = function toastSuccess(content) {
-  uni.showToast({
-    title: content });
-
-};
-
-var fixView = function fixView(view) {
-  if (view > 10000) {
-    view = (view / 10000).toFixed(1) + "w";
-  } else if (view > 1000) {
-    view = (view / 1000).toFixed(1) + "k";
-  }
-  return view;
-};
-
-
-function isEmail(email) {
-  var pattern = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-  return pattern.test(email);
-}
-
-var _findChildren = function _findChildren(menu, pid) {
-  var children = [];
-  var left = [];
-  for (var i = 0; i < menu.length; i++) {
-    if (menu[i].pid == pid) {
-      children.push(menu[i]);
-    } else {
-      left.push(menu[i]);
-    }
-  }
-  return left, children;
-};
-
-var menuToTree = function menuToTree(menu) {
-  // 来自这篇博客，谢谢: https://blog.csdn.net/u013373006/article/details/82108873
-  menu.forEach(function (item) {
-    delete item.children;
-  });
-  var map = {};
-  menu.forEach(function (item) {
-    map[item.id] = item;
-  });
-  var val = [];
-  menu.forEach(function (item) {
-    var parent = map[item.pid];
-    if (parent) {
-      (parent.children || (parent.children = [])).push(item);
-    } else {
-      val.push(item);
-    }
-  });
-  return val;
-};
-
-var menuSortIds = function menuSortIds(menuTree) {
-  var docs = [];
-  for (var i in menuTree) {
-    docs.push(menuTree[i].id);
-    if (menuTree[i].children) {
-      docs = docs.concat(menuSortIds(menuTree[i].children));
-    }
-  }
-  return docs;
-};
-
-var menuTreeReaded = function menuTreeReaded(menuTree, docId) {
-  for (var i in menuTree) {
-    if (menuTree[i].id == docId) {
-      menuTree[i].readed = true;
-      break;
-    }
-    if (menuTree[i].children) {
-      menuTree[i].children = menuTreeReaded(menuTree[i].children, docId);
-    }
-  }
-  return menuTree;
-};
-
-var setReaderSetting = function setReaderSetting(obj) {
-  uni.setStorageSync(keyReaderSetting, JSON.stringify(obj));
-};
-
-var getReaderSetting = function getReaderSetting() {
-  var val = uni.getStorageSync(keyReaderSetting);
-  if (!val) {
-    return {
-      themeIndex: 0,
-      fontIndex: 0 };
-
-  }
-  val = JSON.parse(val);
-  if (val.themeIndex == undefined) val.themeIndex = 0;
-  if (val.fontIndex == undefined) val.fontIndex = 0;
-  return val;
-};
-
-var setSysInfo = function setSysInfo(obj) {
-  uni.setStorageSync(keySysInfo, JSON.stringify(obj));
-};
-
-var formatReading = function formatReading(seconds) {
-  var reading = {
-    hour: 0,
-    min: 0 };
-
-  var hour = 3600;
-  if (seconds <= 0) {
-    return reading;
-  }
-  reading.hour = parseInt(seconds / hour);
-  reading.min = parseInt((seconds - hour * reading.hour) / 60);
-  return reading;
-};
-
-var getSysInfo = function getSysInfo() {
-  var val = uni.getStorageSync(keySysInfo);
-  if (!val) {
-    return {
-      windowWidth: 0,
-      windowHeight: 0,
-      baseWidth: 0,
-      baseHeight: 0 };
-
-  }
-  return JSON.parse(val);
-};
-
-var setSignedAt = function setSignedAt(timestamp) {
-  // timestamp = 0 表示重置签到时间
-  if (timestamp == 0 || timestamp > getSignedAt()) uni.setStorageSync(keySign, timestamp);
-};
-
-var getSignedAt = function getSignedAt() {
-  var signedAt = uni.getStorageSync(keySign) || 0;
-  return parseInt(signedAt);
-};
-
-var isSignedToday = function isSignedToday() {
-  return timestampToDate(now()) == timestampToDate(getSignedAt());
-};
-
-
-module.exports = {
-  formatTime: formatTime,
-  now: now,
-  toTimestamp: toTimestamp,
-  relativeTime: relativeTime,
-  request: request,
-  loading: loading,
-  toastError: toastError,
-  toastSuccess: toastSuccess,
-  setUser: setUser,
-  clearUser: clearUser,
-  getUser: getUser,
-  getToken: getToken,
-  menuToTree: menuToTree,
-  menuSortIds: menuSortIds,
-  menuTreeReaded: menuTreeReaded,
-  setReaderSetting: setReaderSetting,
-  getReaderSetting: getReaderSetting,
-  isEmail: isEmail,
-  getSysInfo: getSysInfo,
-  setSysInfo: setSysInfo,
-  fixView: fixView,
-  formatReading: formatReading,
-  setSignedAt: setSignedAt,
-  getSignedAt: getSignedAt,
-  isSignedToday: isSignedToday };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 77:
-/*!************************************************************!*\
-  !*** E:/Code/UniApp/UniAppStudy/HelloUniApp/App/config.js ***!
-  \************************************************************/
+/***/ 58:
+/*!*****************************************!*\
+  !*** D:/Code/HelloUniApp/App/config.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
 // api host，末尾不要带斜杠。
-var host = 'http://localhost:5001';
+var host = 'http://localhost:5000';
 
 // 是否是调试模式。如果是生产环境，请设置为false
 var debug = true;
@@ -9058,10 +9034,33 @@ module.exports = {
 
 /***/ }),
 
+/***/ 6:
+/*!******************************************************!*\
+  !*** ./node_modules/@dcloudio/uni-stat/package.json ***!
+  \******************************************************/
+/*! exports provided: _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _shasum, _spec, _where, author, bugs, bundleDependencies, deprecated, description, devDependencies, files, gitHead, homepage, license, main, name, repository, scripts, version, default */
+/***/ (function(module) {
+
+module.exports = {"_from":"@dcloudio/uni-stat@next","_id":"@dcloudio/uni-stat@2.0.0-26920200421003","_inBundle":false,"_integrity":"sha512-Aa6R66ZF2pIK9XB+Y7QbSW2GficyNTcdT7fnxFw5gY1eeY+u8oT7rTpZrL1W2qKbqf2FbsNPDjZrg1nRj6RxkQ==","_location":"/@dcloudio/uni-stat","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"@dcloudio/uni-stat@next","name":"@dcloudio/uni-stat","escapedName":"@dcloudio%2funi-stat","scope":"@dcloudio","rawSpec":"next","saveSpec":null,"fetchSpec":"next"},"_requiredBy":["#USER","/","/@dcloudio/vue-cli-plugin-uni"],"_resolved":"https://registry.npmjs.org/@dcloudio/uni-stat/-/uni-stat-2.0.0-26920200421003.tgz","_shasum":"c08ebc00afa71edd9ed388fc4bf411e42d458ac5","_spec":"@dcloudio/uni-stat@next","_where":"/Users/guoshengqiang/Documents/dcloud-plugins/release/uniapp-cli","author":"","bugs":{"url":"https://github.com/dcloudio/uni-app/issues"},"bundleDependencies":false,"deprecated":false,"description":"","devDependencies":{"@babel/core":"^7.5.5","@babel/preset-env":"^7.5.5","eslint":"^6.1.0","rollup":"^1.19.3","rollup-plugin-babel":"^4.3.3","rollup-plugin-clear":"^2.0.7","rollup-plugin-commonjs":"^10.0.2","rollup-plugin-copy":"^3.1.0","rollup-plugin-eslint":"^7.0.0","rollup-plugin-json":"^4.0.0","rollup-plugin-node-resolve":"^5.2.0","rollup-plugin-replace":"^2.2.0","rollup-plugin-uglify":"^6.0.2"},"files":["dist","package.json","LICENSE"],"gitHead":"a7035ab7f2a83dbc2c75090de34f68e5a01224a7","homepage":"https://github.com/dcloudio/uni-app#readme","license":"Apache-2.0","main":"dist/index.js","name":"@dcloudio/uni-stat","repository":{"type":"git","url":"git+https://github.com/dcloudio/uni-app.git","directory":"packages/uni-stat"},"scripts":{"build":"NODE_ENV=production rollup -c rollup.config.js","dev":"NODE_ENV=development rollup -w -c rollup.config.js"},"version":"2.0.0-26920200421003"};
+
+/***/ }),
+
+/***/ 7:
+/*!***********************************************************!*\
+  !*** D:/Code/HelloUniApp/App/pages.json?{"type":"style"} ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = { "pages": { "pages/new/new": { "navigationBarTitleText": "今日", "enablePullDownRefresh": true }, "pages/hot/hot": { "navigationBarTitleText": "最热", "enablePullDownRefresh": true }, "pages/detail/detail": { "navigationBarTitleText": "详情", "navigationBarBackgroundColor": "#000000", "backgroundColor": "#000000" }, "pages/tag/tag": { "navigationBarTitleText": "分类", "enablePullDownRefresh": false }, "pages/list/list": { "navigationBarTitleText": "专题", "enablePullDownRefresh": true }, "pages/center/center": { "navigationBarTitleText": "个人中心", "enablePullDownRefresh": false }, "pages/login/login": { "navigationBarTitleText": "登录" }, "pages/about/about": {} }, "globalStyle": { "navigationBarTextStyle": "white", "navigationBarTitleText": "面包", "navigationBarBackgroundColor": "#2F85FC", "backgroundColor": "#FFFFFF" } };exports.default = _default;
+
+/***/ }),
+
 /***/ 8:
-/*!*****************************************************************************!*\
-  !*** E:/Code/UniApp/UniAppStudy/HelloUniApp/App/pages.json?{"type":"stat"} ***!
-  \*****************************************************************************/
+/*!**********************************************************!*\
+  !*** D:/Code/HelloUniApp/App/pages.json?{"type":"stat"} ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 

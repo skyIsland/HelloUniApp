@@ -1,5 +1,5 @@
 // api host，末尾不要带斜杠。
-let host = 'http://localhost:5001'
+let host = 'http://localhost:5000'
 
 // 是否是调试模式。如果是生产环境，请设置为false
 const debug = true

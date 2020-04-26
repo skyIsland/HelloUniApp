@@ -25,6 +25,7 @@
 
 <script>
 	import config from '../../config.js'
+	import util from '../../utils/util.js'
 
 	export default {
 		data() {
@@ -54,8 +55,10 @@
 			let user = util.getUser() || {
 				uid: 0
 			}
-			var userName = user.UserInfo.RealName || '丹麦的面包不单卖';
-			this.uerInfo.name = userName;
+			var u = user.UserInfo || {
+				RealName: '丹麦的面包不单卖'
+			};
+			this.uerInfo.name = u.RealName;
 		}
 	}
 </script>

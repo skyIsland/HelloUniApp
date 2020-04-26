@@ -123,7 +123,7 @@ const request = (api, params = {}, method = "GET", header = {}) => {
 			header["content-type"] = "application/json"
 		}
 
-		if (method.toUpperCase() == 'POST') header["content-type"] = "application/x-www-form-urlencoded"
+		if (method.toUpperCase() == 'POST') header["content-type"] = "application/json-patch+json"
 
 		let token = getToken()
 		if (token) header['Authorization'] = token
@@ -136,13 +136,13 @@ const request = (api, params = {}, method = "GET", header = {}) => {
 			success: function(res) {
 				if (res.statusCode == 200) {
 					var d = res.data;
-					if (d.Sucess) {
+					if (d.Success) {
 						resolve(res.data);
 					} else {
 						if (d.ErrorCode == 401) {
 							clearUser();
 						}
-						this.toastError(d.Msg)
+						toastError(d.Msg)
 					}
 				} else {
 					if (res.statusCode == 401) clearUser()
