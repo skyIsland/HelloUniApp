@@ -47,7 +47,7 @@
 				
 				util.request(config.api.login, e.detail.value, 'POST').then((res) => {
 					if (config.debug) console.log(config.api.login, res);
-					let user = res.data
+					let user = res.Data
 					if (user == undefined || user.Token == '') {
 						util.toastError('登录失败：未知错误')
 						that.loading = false

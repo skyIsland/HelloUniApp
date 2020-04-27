@@ -182,13 +182,17 @@ var _util = _interopRequireDefault(__webpack_require__(/*! ../../utils/util.js *
 //
 var _default = { data: function data() {return { login: false, avatarUrl: '/static/logo.png', uerInfo: { name: '丹麦的面包不单卖' } };}, methods: { goLogin: function goLogin() {if (!this.login) {uni.navigateTo({ url: '/pages/login/login' });}}, goAbout: function goAbout() {uni.navigateTo({ url: '/pages/about/about' });} },
   onLoad: function onLoad(options) {
-    var user = _util.default.getUser() || {
-      uid: 0 };
+    var user = _util.default.getUser();
+    this.login = user.Token != 'undefined';
+    if (this.login) {
+      var name = user.UserInfo.RealName;
 
-    var u = user.UserInfo || {
-      RealName: '丹麦的面包不单卖' };
+      if (name == '超级管理员') {
+        name = '丹麦的面包不单卖';
+      }
 
-    this.uerInfo.name = u.RealName;
+      this.uerInfo.name = name;
+    }
   } };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 

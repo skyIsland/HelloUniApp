@@ -52,13 +52,17 @@
 			}
 		},
 		onLoad: function(options) {
-			let user = util.getUser() || {
-				uid: 0
+			let user = util.getUser();
+			this.login = user.Token != 'undefined';
+			if (this.login) {
+				var name = user.UserInfo.RealName;
+
+				if (name == '超级管理员') {
+					name = '丹麦的面包不单卖';
+				}
+
+				this.uerInfo.name = name;
 			}
-			var u = user.UserInfo || {
-				RealName: '丹麦的面包不单卖'
-			};
-			this.uerInfo.name = u.RealName;
 		}
 	}
 </script>

@@ -177,7 +177,7 @@ var _util = _interopRequireDefault(__webpack_require__(/*! ../../utils/util.js *
 
       _util.default.request(_config.default.api.login, e.detail.value, 'POST').then(function (res) {
         if (_config.default.debug) console.log(_config.default.api.login, res);
-        var user = res.data;
+        var user = res.Data;
         if (user == undefined || user.Token == '') {
           _util.default.toastError('登录失败：未知错误');
           that.loading = false;

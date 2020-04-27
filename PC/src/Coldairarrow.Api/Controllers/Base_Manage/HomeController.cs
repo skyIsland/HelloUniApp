@@ -49,7 +49,9 @@ namespace Coldairarrow.Api.Controllers.Base_Manage
         public async Task<object> ApiSubmitLogin(LoginInputDTO input)
         {
             var token =  await _homeBus.SubmitLoginAsync(input);
-            var theInfo = await _userBus.GetTheDataAsync(_operator.UserId);
+
+            var payload = JWTHelper.GetPayload<JWTPayload>(token);
+            var theInfo = await _userBus.GetTheDataAsync(payload.UserId);
 
             var resObj = new
             {
