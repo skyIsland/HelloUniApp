@@ -18,12 +18,7 @@
           <a-col :md="4" :sm="24">
             <a-form-item label="查询类别">
               <a-select allowClear v-model="queryParam.condition">
-                <a-select-option key="ID">ID</a-select-option>
-                <a-select-option key="Titile">Titile</a-select-option>
-                <a-select-option key="Remarks">Remarks</a-select-option>
-                <a-select-option key="UpdateUserID">UpdateUserID</a-select-option>
-                <a-select-option key="CreateType">CreateType</a-select-option>
-                <a-select-option key="Code">Code</a-select-option>
+                <a-select-option key="Remark">Remark</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -69,18 +64,9 @@
 import EditForm from './EditForm'
 
 const columns = [
-  { title: 'ID', dataIndex: 'ID', width: '10%' },
-  { title: 'CategoryID', dataIndex: 'CategoryID', width: '10%' },
-  { title: 'Titile', dataIndex: 'Titile', width: '10%' },
-  { title: 'Time', dataIndex: 'Time', width: '10%' },
-  { title: 'Money', dataIndex: 'Money', width: '10%' },
-  { title: 'Remarks', dataIndex: 'Remarks', width: '10%' },
-  { title: 'UpdateUserID', dataIndex: 'UpdateUserID', width: '10%' },
-  { title: 'UpdateTime', dataIndex: 'UpdateTime', width: '10%' },
-  { title: 'MoneyFormula', dataIndex: 'MoneyFormula', width: '10%' },
-  { title: 'RecordTypeSourceID', dataIndex: 'RecordTypeSourceID', width: '10%' },
-  { title: 'CreateType', dataIndex: 'CreateType', width: '10%' },
-  { title: 'Code', dataIndex: 'Code', width: '10%' },
+  { title: '时间', dataIndex: 'Time', width: '10%' },
+  { title: '金额', dataIndex: 'Money', width: '10%' },
+  { title: '备注', dataIndex: 'Remark', width: '10%' },
   { title: '操作', dataIndex: 'action', scopedSlots: { customRender: 'action' } }
 ]
 
@@ -119,7 +105,7 @@ export default {
 
       this.loading = true
       this.$http
-        .post('/Bill/IsMatch_MoneyChange/GetDataList', {
+        .post('/IsMatch_MoneyManage/IsMatch_Liabilities/GetDataList', {
           PageIndex: this.pagination.current,
           PageRows: this.pagination.pageSize,
           SortField: this.sorter.field || 'Id',
@@ -153,7 +139,7 @@ export default {
         title: '确认删除吗?',
         onOk() {
           return new Promise((resolve, reject) => {
-            thisObj.$http.post('/Bill/IsMatch_MoneyChange/DeleteData', ids).then(resJson => {
+            thisObj.$http.post('/IsMatch_MoneyManage/IsMatch_Liabilities/DeleteData', ids).then(resJson => {
               resolve()
 
               if (resJson.Success) {

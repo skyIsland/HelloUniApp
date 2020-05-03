@@ -1,4 +1,4 @@
-﻿using Coldairarrow.Entity.Bill;
+﻿using Coldairarrow.Entity.IsMatch_MoneyManage;
 using Coldairarrow.Util;
 using EFCore.Sharding;
 using LinqKit;
@@ -8,27 +8,27 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 
-namespace Coldairarrow.Business.Bill
+namespace Coldairarrow.Business.IsMatch_MoneyManage
 {
-    public class IsMatch_MoneyChangeBusiness : BaseBusiness<IsMatch_MoneyChange>, IIsMatch_MoneyChangeBusiness, ITransientDependency
+    public class IsMatch_LiabilitiesBusiness : BaseBusiness<IsMatch_Liabilities>, IIsMatch_LiabilitiesBusiness, ITransientDependency
     {
-        public IsMatch_MoneyChangeBusiness(IRepository repository)
+        public IsMatch_LiabilitiesBusiness(IRepository repository)
             : base(repository)
         {
         }
 
         #region 外部接口
 
-        public async Task<PageResult<IsMatch_MoneyChange>> GetDataListAsync(PageInput<ConditionDTO> input)
+        public async Task<PageResult<IsMatch_Liabilities>> GetDataListAsync(PageInput<ConditionDTO> input)
         {
             var q = GetIQueryable();
-            var where = LinqHelper.True<IsMatch_MoneyChange>();
+            var where = LinqHelper.True<IsMatch_Liabilities>();
             var search = input.Search;
 
             //筛选
             if (!search.Condition.IsNullOrEmpty() && !search.Keyword.IsNullOrEmpty())
             {
-                var newWhere = DynamicExpressionParser.ParseLambda<IsMatch_MoneyChange, bool>(
+                var newWhere = DynamicExpressionParser.ParseLambda<IsMatch_Liabilities, bool>(
                     ParsingConfig.Default, false, $@"{search.Condition}.Contains(@0)", search.Keyword);
                 where = where.And(newWhere);
             }
@@ -36,17 +36,17 @@ namespace Coldairarrow.Business.Bill
             return await q.Where(where).GetPageResultAsync(input);
         }
 
-        public async Task<IsMatch_MoneyChange> GetTheDataAsync(string id)
+        public async Task<IsMatch_Liabilities> GetTheDataAsync(string id)
         {
             return await GetEntityAsync(id);
         }
 
-        public async Task AddDataAsync(IsMatch_MoneyChange data)
+        public async Task AddDataAsync(IsMatch_Liabilities data)
         {
             await InsertAsync(data);
         }
 
-        public async Task UpdateDataAsync(IsMatch_MoneyChange data)
+        public async Task UpdateDataAsync(IsMatch_Liabilities data)
         {
             await UpdateAsync(data);
         }

@@ -8,24 +8,19 @@
     @cancel="()=>{this.visible=false}"
   >
     <a-spin :spinning="loading">
-      <a-form-model ref="form" :model="entity" :rules="rules" v-bind="layout">       
-        <a-form-model-item label="支出时间" prop="PayTime">
-         <a-date-picker v-model="entity.PayTime" showTime format="YYYY-MM-DD HH:mm:ss" />   
+      <a-form-model ref="form" :model="entity" :rules="rules" v-bind="layout">
+         <a-form-model-item label="时间" prop="Time">
+         <a-date-picker v-model="entity.Time" showTime format="YYYY-MM-DD HH:mm:ss" />   
         </a-form-model-item>
-        <a-form-model-item label="支出方式" prop="PayWay">
-         <a-select v-model="entity.PayWay">
-          <a-select-option v-for="item in thisOptions" :key="item.value">{{ item.text }}</a-select-option>
-          </a-select>
-        </a-form-model-item>
-        <a-form-model-item label="支付金额" prop="Money">
-          <a-input v-model="entity.Money" autocomplete="off" />
-        </a-form-model-item>
-        <a-form-model-item label="支出类型" prop="PayType">
-         <a-select v-model="entity.PayType">
-          <a-select-option v-for="item in thisPayType" :key="item.value">{{ item.text }}</a-select-option>
+        <a-form-model-item label="类型" prop="PayType">
+         <a-select v-model="entity.Type">
+          <a-select-option v-for="item in thisType" :key="item.value">{{ item.text }}</a-select-option>
           </a-select>                 
         </a-form-model-item>
-         <a-form-model-item label="备注" prop="Remark">
+        <a-form-model-item label="金额" prop="Money">
+          <a-input v-model="entity.Money" autocomplete="off" />
+        </a-form-model-item>
+        <a-form-model-item label="备注" prop="Remark">
           <a-textarea v-model="entity.Remark" :rows="4" />            
          </a-form-model-item>
       </a-form-model>
@@ -34,8 +29,6 @@
 </template>
 
 <script>
-import moment from 'moment';
-import 'moment/locale/zh-cn';
 export default {
   props: {
     parentObj: Object
@@ -51,19 +44,11 @@ export default {
       entity: {},
       rules: {},
       title: '',
-      thisOptions:[
-        {text:'支付宝',value:1},
-        {text:'微信',value:2}
+      thisType:[
+        {text:'信用卡',value:1},
+        {text:'花呗',value:2},
+        {text:'白条',value:3}
       ],
-      thisPayType:[
-        {text:'吃',value:1},
-        {text:'喝',value:2},
-        {text:'玩',value:3},
-        {text:'乐',value:4},
-        {text:'住',value:5},
-        {text:'理财',value:6}
-      ],
-       moment,
     }
   },
   methods: {
@@ -79,10 +64,10 @@ export default {
 
       if (id) {
         this.loading = true
-        this.$http.post('/IsMatch_MoneyManage/IsMatch_Pay/GetTheData', { id: id }).then(resJson => {
+        this.$http.post('/IsMatch_MoneyManage/IsMatch_Liabilities/GetTheData', { id: id }).then(resJson => {
           this.loading = false
+
           this.entity = resJson.Data
-          this.entity.PayTime = moment(this.entity.PayTime)
         })
       }
     },
@@ -92,7 +77,7 @@ export default {
           return
         }
         this.loading = true
-        this.$http.post('/IsMatch_MoneyManage/IsMatch_Pay/SaveData', this.entity).then(resJson => {
+        this.$http.post('/IsMatch_MoneyManage/IsMatch_Liabilities/SaveData', this.entity).then(resJson => {
           this.loading = false
 
           if (resJson.Success) {
