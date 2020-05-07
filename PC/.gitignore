@@ -261,3 +261,7 @@ __pycache__/
 *.pyc
 /src/Coldairarrow.Web/wwwroot/Upload/File
 /src/Coldairarrow.Api/wwwroot/Upload
+/src/Coldairarrow.Api/appsettings.json
+/src/Coldairarrow.Api/appsettings.Development.json
+
+/src/Coldairarrow.Api/Controllers/Base_Manage/UploadController.cs
