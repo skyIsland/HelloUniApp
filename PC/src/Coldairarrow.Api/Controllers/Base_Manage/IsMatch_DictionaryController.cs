@@ -35,6 +35,12 @@ namespace Coldairarrow.Api.Controllers.Base_Manage
             return await _isMatch_DictionaryBus.GetTheDataAsync(input.id);
         }
 
+        [HttpPost]
+        public async Task<List<SelectOption>> GetOptionList(OptionListInputDTO input)
+        {
+            return await _isMatch_DictionaryBus.GetOptionListAsync(input);
+        }
+
         #endregion
 
         #region 提交

@@ -17,6 +17,8 @@ namespace Coldairarrow.Business.Base_Manage
         {
         }
 
+        protected override string _textField => "DictionaryName";
+
         #region 外部接口
 
         public async Task<PageResult<IsMatch_Dictionary>> GetDataListAsync(PageInput<ConditionDTO> input)

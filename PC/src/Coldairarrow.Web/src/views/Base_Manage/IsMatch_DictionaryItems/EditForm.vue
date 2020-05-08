@@ -16,7 +16,11 @@
           <a-input v-model="entity.DictionaryItemText" autocomplete="off" />
         </a-form-model-item>
         <a-form-model-item label="所属数据字典" prop="DictionaryId">
-          <a-input v-model="entity.DictionaryId" autocomplete="off" />
+          <c-select
+          v-model="entity.DictionaryId"
+          url="/Base_Manage/IsMatch_Dictionary/GetOptionList"
+          searchMode="server"
+        ></c-select>          
         </a-form-model-item>
         <a-form-model-item label="排序" prop="Rank">
           <a-input v-model="entity.Rank" autocomplete="off" />
@@ -27,7 +31,11 @@
 </template>
 
 <script>
+import CSelect from '@/components/CSelect/CSelect'
 export default {
+  components:{
+    CSelect
+  },
   props: {
     parentObj: Object
   },

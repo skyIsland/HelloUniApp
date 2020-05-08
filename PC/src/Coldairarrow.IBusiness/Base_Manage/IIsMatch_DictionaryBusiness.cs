@@ -8,6 +8,9 @@ namespace Coldairarrow.Business.Base_Manage
     public interface IIsMatch_DictionaryBusiness
     {
         Task<PageResult<IsMatch_Dictionary>> GetDataListAsync(PageInput<ConditionDTO> input);
+
+        Task<List<SelectOption>> GetOptionListAsync(OptionListInputDTO input);
+
         Task<IsMatch_Dictionary> GetTheDataAsync(string id);
         Task AddDataAsync(IsMatch_Dictionary data);
         Task UpdateDataAsync(IsMatch_Dictionary data);
