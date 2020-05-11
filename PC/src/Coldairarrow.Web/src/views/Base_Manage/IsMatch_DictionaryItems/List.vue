@@ -68,7 +68,7 @@ import EditForm from './EditForm'
 const columns = [
   { title: '数据字典编码', dataIndex: 'DictionaryItemCode', width: '10%' },
   { title: '数据字典项文本', dataIndex: 'DictionaryItemText', width: '10%' },
-  { title: '所属数据字典', dataIndex: 'DictionaryId', width: '10%' },
+  { title: '所属数据字典', dataIndex: 'DictionaryName', width: '10%' },
   { title: '排序', dataIndex: 'Rank', width: '10%' },
   { title: '操作', dataIndex: 'action', scopedSlots: { customRender: 'action' } }
 ]

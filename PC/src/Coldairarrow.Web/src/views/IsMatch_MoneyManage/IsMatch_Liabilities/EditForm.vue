@@ -12,10 +12,12 @@
          <a-form-model-item label="时间" prop="Time">
          <a-date-picker v-model="entity.Time" showTime format="YYYY-MM-DD HH:mm:ss" />   
         </a-form-model-item>
-        <a-form-model-item label="类型" prop="PayType">
-         <a-select v-model="entity.Type">
-          <a-select-option v-for="item in thisType" :key="item.value">{{ item.text }}</a-select-option>
-          </a-select>                 
+        <a-form-model-item label="类型" prop="Type">
+         <c-select
+          v-model="entity.Type"
+          url="/Base_Manage/IsMatch_DictionaryItems/GetOptionList?dictionaryCode=LiabilityType"
+          searchMode="server"
+        ></c-select>                                 
         </a-form-model-item>
         <a-form-model-item label="金额" prop="Money">
           <a-input v-model="entity.Money" autocomplete="off" />
@@ -29,7 +31,13 @@
 </template>
 
 <script>
+import CSelect from '@/components/CSelect/CSelect'
+import moment from 'moment';
+import 'moment/locale/zh-cn';
 export default {
+   components:{
+    CSelect
+  },
   props: {
     parentObj: Object
   },
@@ -43,12 +51,7 @@ export default {
       loading: false,
       entity: {},
       rules: {},
-      title: '',
-      thisType:[
-        {text:'信用卡',value:1},
-        {text:'花呗',value:2},
-        {text:'白条',value:3}
-      ],
+      title: ''     
     }
   },
   methods: {
@@ -68,6 +71,7 @@ export default {
           this.loading = false
 
           this.entity = resJson.Data
+          this.entity.Time = moment(this.entity.Time)
         })
       }
     },

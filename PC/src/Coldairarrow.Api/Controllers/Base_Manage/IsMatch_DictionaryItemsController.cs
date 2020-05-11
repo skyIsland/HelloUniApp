@@ -24,15 +24,21 @@ namespace Coldairarrow.Api.Controllers.Base_Manage
         #region 获取
 
         [HttpPost]
-        public async Task<PageResult<IsMatch_DictionaryItems>> GetDataList(PageInput<ConditionDTO> input)
+        public async Task<PageResult<IsMatch_DictionaryItemsDTO>> GetDataList(PageInput<IsMatch_DictionaryItemsInputDTO> input)
         {
             return await _isMatch_DictionaryItemsBus.GetDataListAsync(input);
         }
 
         [HttpPost]
-        public async Task<IsMatch_DictionaryItems> GetTheData(IdInputDTO input)
+        public async Task<IsMatch_DictionaryItemsDTO> GetTheData(IsMatch_DictionaryItemsInputDTO input)
         {
-            return await _isMatch_DictionaryItemsBus.GetTheDataAsync(input.id);
+            return await _isMatch_DictionaryItemsBus.GetTheDataAsync(input.Id);
+        }
+
+        [HttpPost]
+        public async Task<List<SelectOption>> GetOptionList(string dictionaryCode)
+        {
+            return await _isMatch_DictionaryItemsBus.GetOptionListAsync(dictionaryCode);
         }
 
         #endregion
