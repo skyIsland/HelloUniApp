@@ -14,7 +14,8 @@ const api = {
 	loginByWechat: `${host}/api/v1/login-by-wechat`,
 	loginBindWechat: `${host}/api/v1/login-bind-wechat`,
 	loginedBindWechat: `${host}/api/v1/login-bind-wechat`,
-	logout: `${host}/api/v1/logout`	
+	logout: `${host}/api/v1/logout`	,
+	liabilitiesList: `${host}/IsMatch_MoneyManage/IsMatch_Liabilities/GetDataList`	,
 }
 
 module.exports = {

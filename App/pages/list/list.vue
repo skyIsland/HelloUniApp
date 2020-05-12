@@ -87,45 +87,42 @@
 		},
 		methods: {
 			getData(e) {
-				uni.request({
-					url: this.$serverUrl + '/api/picture/list.php?type=' + this.id,
-					success: (ret) => {
-						if (ret.statusCode !== 200) {
-							console.log('请求失败', ret)
-							return;
-						}
-
-						const data = ret.data.data;
-
-						if (this.refreshing && data[0].id === this.dataList[0].id) {
-							uni.showToast({
-								title: '已经最新',
-								icon: 'none',
-							});
-							this.refreshing = false;
-							uni.stopPullDownRefresh();
-							return;
-						}
-
-						let list = [];
-						for (var i = 0; i < data.length; i++) {
-							var item = data[i];
-							item.guid = this.newGuid() + item.id
-							list.push(item);
-						}
-
-						if (this.refreshing) {
-							this.refreshing = false;
-							uni.stopPullDownRefresh();
-							this.dataList = list;
-							this.fetchPageNum = 2;
-						} else {
-							this.dataList = this.dataList.concat(list);
-							this.fetchPageNum += 1;
-						}
+				util.request(config.api.liabilitiesList, e.detail.value, 'POST').then((res) => {
+					if (config.debug) console.log(config.api.login, res);
+					const data = ret.Data;
+					
+					if (this.refreshing && data[0].id === this.dataList[0].id) {
+						uni.showToast({
+							title: '已经最新',
+							icon: 'none',
+						});
+						this.refreshing = false;
+						uni.stopPullDownRefresh();
+						return;
+					}
+					
+					let list = [];
+					for (var i = 0; i < data.length; i++) {
+						var item = data[i];
+						item.guid = this.newGuid() + item.id
+						list.push(item);
+					}
+					
+					if (this.refreshing) {
+						this.refreshing = false;
+						uni.stopPullDownRefresh();
+						this.dataList = list;
+						this.fetchPageNum = 2;
+					} else {
+						this.dataList = this.dataList.concat(list);
 						this.fetchPageNum += 1;
 					}
-				});
+					this.fetchPageNum += 1;
+				}).catch((e) => {
+					if (config.debug) console.log(e);
+					that.loading = false
+					util.toastError(e.data.message || e.errMsg)
+				});				
 			},
 			newGuid() {
 				let s4 = function() {
